@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Coupon;
@@ -34,22 +35,91 @@ class AdminController extends Controller
     }
     
     public function add_brand_store(Request $request)
-    {        
-        $request->validate([
-            'name' => 'required',
-            'slug' => 'required|unique:brands,slug',
-            'image' => 'mimes:png,jpg,jpeg|max:2048'
-        ]);
+    {
+        Log::info('=== Add Brand Store START ===');
+
+        // Log raw input
+        Log::info('Request all data', $request->all());
+
+        // Log informasi file mentah (kalau ada)
+        if ($request->hasFile('image')) {
+            $imgFile = $request->file('image');
+            Log::info('Image raw file info', [
+                'original_name' => $imgFile->getClientOriginalName(),
+                'extension'     => $imgFile->getClientOriginalExtension(),
+                'mime_type'     => $imgFile->getMimeType(),
+                'size'          => $imgFile->getSize(),
+                'tmp_path'      => $imgFile->getPathname(),
+            ]);
+        } else {
+            Log::warning('No image file detected in request');
+        }
+
+        // Validasi
+        try {
+            $request->validate([
+                'name'  => 'required',
+                'slug'  => 'required|unique:brands,slug',
+                'image' => 'nullable|mimes:png,jpg,jpeg,webp|max:2048'
+            ]);
+            Log::info('Validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed', ['errors' => $e->errors()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors'  => $e->errors()
+            ], 422);
+        }
+
         $brand = new Brand();
         $brand->name = $request->name;
         $brand->slug = Str::slug($request->name);
-        $image = $request->file('image');
-        $file_extention = $request->file('image')->extension();
-        $file_name = Carbon::now()->timestamp . '.' . $file_extention;        
-        $this->GenerateBrandThumbnailsImage($image,$file_name);
-        $brand->image = $file_name;        
-        $brand->save();
-        return redirect()->route('admin.brands')->with('status','Record has been added successfully !');
+        Log::info('Brand model initialized', $brand->toArray());
+
+        // Proses upload gambar jika ada
+        if ($request->hasFile('image')) {
+            try {
+                $image = $request->file('image');
+                $file_extention = $image->extension();
+                $file_name = Carbon::now()->timestamp . '.' . $file_extention;
+                Log::info('Generated file name', ['file_name' => $file_name]);
+
+                $this->GenerateBrandThumbnailsImage($image, $file_name);
+                Log::info('Thumbnail generated successfully');
+
+                $brand->image = $file_name;
+            } catch (\Exception $e) {
+                Log::error('Error processing image', ['error' => $e->getMessage()]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to process image',
+                    'error'   => $e->getMessage()
+                ], 500);
+            }
+        }
+
+        // Simpan ke DB
+        try {
+            $brand->save();
+            Log::info('Brand saved successfully', ['brand_id' => $brand->id]);
+        } catch (\Exception $e) {
+            Log::error('Error saving brand', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to save brand',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+
+        Log::info('=== Add Brand Store END ===');
+
+        // Balikin JSON buat debug di Network
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Record has been added successfully!',
+            'brand' => $brand
+        ]);
     }
 
     public function edit_brand($id)
@@ -180,81 +250,62 @@ class AdminController extends Controller
     public function product_store(Request $request)
     {
         $request->validate([
-            'name'=>'required',
-            'slug'=>'required|unique:products,slug',
-            'category_id'=>'required',
-            'brand_id'=>'required',            
-            'short_description'=>'required',
-            'description'=>'required',
-            'regular_price'=>'required',
-            'sale_price'=>'required',
-            'SKU'=>'required',
-            'stock_status'=>'required',
-            'featured'=>'required',
-            'quantity'=>'required',
-            'image'=>'required|mimes:png,jpg,jpeg|max:2048'            
+            'name'              => 'required',
+            'slug'              => 'required|unique:products,slug',
+            'category_id'       => 'required',
+            'brand_id'          => 'required',            
+            'short_description' => 'required',
+            'description'       => 'required',
+            'SKU'               => 'required',
+            'stock_status'      => 'required',
+            'featured'          => 'required',
+            'image'             => 'required|mimes:png,jpg,jpeg|max:2048',
+            'variants'          => 'required|json'
         ]);
+
         $product = new Product();
         $product->name = $request->name;
-        $product->slug = Str::slug($request->name);
+        $product->slug = Str::slug($request->slug);
         $product->short_description = $request->short_description;
         $product->description = $request->description;
-        $product->regular_price = $request->regular_price;
-        $product->sale_price = $request->sale_price;
         $product->SKU = $request->SKU;
         $product->stock_status = $request->stock_status;
         $product->featured = $request->featured;
-        $product->quantity = $request->quantity;
+        $product->variants = $request->variants; // sudah JSON
+
+        // handle image utama
         $current_timestamp = Carbon::now()->timestamp;
-        if($request->hasFile('image'))
-        {        
-            if (File::exists(public_path('uploads/products').'/'.$product->image)) {
-                File::delete(public_path('uploads/products').'/'.$product->image);
-            }
-            if (File::exists(public_path('uploads/products/thumbnails').'/'.$product->image)) {
-                File::delete(public_path('uploads/products/thumbnails').'/'.$product->image);
-            }            
-        
+        if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = $current_timestamp.'.'.$image->extension();
-            $this->GenerateThumbnailsImage($image,$imageName);            
+            $this->GenerateThumbnailsImage($image, $imageName);            
             $product->image = $imageName;
         }
-        $gallery_arr = array();
-        $gallery_images = "";
-        $counter = 1;
-        if($request->hasFile('images'))
-        {
-            $oldGImages = explode(",",$product->images);
-            foreach($oldGImages as $gimage)
-            {
-                if (File::exists(public_path('uploads/products').'/'.trim($gimage))) {
-                    File::delete(public_path('uploads/products').'/'.trim($gimage));
-                }
-                if (File::exists(public_path('uploads/products/thumbails').'/'.trim($gimage))) {
-                    File::delete(public_path('uploads/products/thumbails').'/'.trim($gimage));
-                }
-            }
-            $allowedfileExtension=['jpg','png','jpeg'];
-            $files = $request->file('images');
-            foreach($files as $file){                
-                $gextension = $file->getClientOriginalExtension();                                
-                $check=in_array($gextension,$allowedfileExtension);            
-                if($check)
-                {
-                    $gfilename = $current_timestamp . "-" . $counter . "." . $gextension;   
-                    $this->GenerateThumbnailsImage($file,$gfilename);                    
-                    array_push($gallery_arr,$gfilename);
-                    $counter = $counter + 1;
+
+        // handle gallery images
+        $gallery_arr = [];
+        if ($request->hasFile('images')) {
+            $allowedfileExtension = ['jpg','png','jpeg'];
+            $counter = 1;
+            foreach ($request->file('images') as $file) {
+                $gextension = $file->getClientOriginalExtension();
+                if (in_array($gextension, $allowedfileExtension)) {
+                    $gfilename = $current_timestamp . "-" . $counter . "." . $gextension;
+                    $this->GenerateThumbnailsImage($file, $gfilename);
+                    $gallery_arr[] = $gfilename;
+                    $counter++;
                 }
             }
-            $gallery_images = implode(',', $gallery_arr);
         }
-        $product->images = $gallery_images;
+        $product->images = implode(',', $gallery_arr);
+
         $product->category_id = $request->category_id;
         $product->brand_id = $request->brand_id;
+
         $product->save();
-        return redirect()->route('admin.products')->with('status','Record has been added successfully !');
+
+        return redirect()->route('admin.products')
+            ->with('status', 'Record has been added successfully!');
     }
 
     public function edit_product($id)
@@ -274,8 +325,6 @@ class AdminController extends Controller
             'brand_id'=>'required',            
             'short_description'=>'required',
             'description'=>'required',
-            'regular_price'=>'required',
-            'sale_price'=>'required',
             'SKU'=>'required',
             'stock_status'=>'required',
             'featured'=>'required',
@@ -288,8 +337,6 @@ class AdminController extends Controller
         $product->slug = Str::slug($request->name);
         $product->short_description = $request->short_description;
         $product->description = $request->description;
-        $product->regular_price = $request->regular_price;
-        $product->sale_price = $request->sale_price;
         $product->SKU = $request->SKU;
         $product->stock_status = $request->stock_status;
         $product->featured = $request->featured;
@@ -413,41 +460,46 @@ class AdminController extends Controller
     }
 
     public function update_order_status(Request $request)
-    {        
+    {
         $order = Order::find($request->order_id);
-        $order->status = $request->order_status;
-        if($request->order_status=='delivered')
-        {
-            $order->delivered_date = Carbon::now();
+
+        $newStatus = $request->order_status;
+
+        // Validasi: delivered hanya bisa kalau transaksi sudah settlement atau approved
+        if ($newStatus === 'delivered' && $order->transaction && !in_array($order->transaction->status, ['settlement','approved'])) {
+            return back()->with('status', 'Cannot mark as delivered before transaction is settled or approved.');
         }
-        else if($request->order_status=='canceled')
-        {
-            $order->canceled_date = Carbon::now();
-        }        
+
+        $order->status = $newStatus;
+
+        switch ($newStatus) {
+            case 'delivered':
+                $order->delivered_date = Carbon::now();
+                break;
+            case 'canceled':
+                $order->canceled_date = Carbon::now();
+                break;
+            default:
+                $order->delivered_date = null;
+                $order->canceled_date = null;
+                break;
+        }
+
         $order->save();
-        if($request->order_status=='delivered')
-        {
-            $transaction = Transaction::where('order_id',$request->order_id)->first();
-            $transaction->status = "approved";
-            $transaction->save();
-        }
-        return back()->with("status", "Status changed successfully!");
+
+        return back()->with('status', 'Order status changed successfully!');
     }
 
     public function GenerateThumbnailsImage($image, $imageName)
     {
-        $destinationPathThumbnail = public_path('uploads/products/thumbnails');
         $destinationPath = public_path('uploads/products');
         $img = Image::read($image->path());
 
-        $img->cover(540, 689, "top");
-        $img->resize(540, 689, function($constraint){
+        // Resize tanpa crop, biar sesuai aspect ratio
+        $img->resize(800, 800, function($constraint) {
             $constraint->aspectRatio();
+            $constraint->upsize(); // biar gambar kecil gak jadi pecah
         })->save($destinationPath.'/'.$imageName);
-
-        $img->resize(104, 104, function($constraint){
-            $constraint->aspectRatio();
-        })->save($destinationPathThumbnail.'/'.$imageName);
     }
 
     public function GenerateBrandThumbnailsImage($image, $imageName)

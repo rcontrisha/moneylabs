@@ -54,20 +54,26 @@
                                     <td class="text-center">{{"1" . str_pad($order->id,4,"0",STR_PAD_LEFT)}}</td>
                                     <td class="text-center">{{$order->name}}</td>
                                     <td class="text-center">{{$order->phone}}</td>
-                                    <td class="text-center">${{$order->subtotal}}</td>
-                                    <td class="text-center">${{$order->tax}}</td>
-                                    <td class="text-center">${{$order->total}}</td>
+                                    <td class="text-center">IDR {{$order->subtotal}}</td>
+                                    <td class="text-center">IDR {{$order->tax}}</td>
+                                    <td class="text-center">IDR {{$order->total}}</td>
                                     <td class="text-center">
-                                        @if($order->status=='delivered')
-                                        <span class="badge bg-success text-white fw-semibold px-3 py-2"
-                                            style="opacity: 1 !important;">Delivered</span>
-                                        @elseif($order->status=='canceled')
-                                        <span class="badge bg-danger text-white fw-semibold px-3 py-2"
-                                            style="opacity: 1 !important;">Canceled</span>
-                                        @else
-                                        <span class="badge"
-                                            style="background-color: #ffc107; color: #000; font-weight: 600; padding: 0.5em 1em; opacity: 1 !important;">Ordered</span>
-                                        @endif
+                                        @php
+                                            $status = $order->status;
+                                            $badgeClass = match($status) {
+                                                'ordered' => 'bg-warning',
+                                                'approved' => 'bg-primary',
+                                                'shipped' => 'bg-info',
+                                                'delivered' => 'bg-success',
+                                                'canceled' => 'bg-danger',
+                                                default => 'bg-secondary'
+                                            };
+                                            $statusLabel = ucfirst($status);
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }} text-white fw-semibold px-3 py-2"
+                                            style="opacity:1 !important;">
+                                            {{ $statusLabel }}
+                                        </span>
                                     </td>
                                     <td class="text-center">{{$order->created_at}}</td>
                                     <td class="text-center">{{$order->orderItems->count()}}</td>

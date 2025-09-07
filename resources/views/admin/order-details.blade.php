@@ -55,13 +55,22 @@
                 <tr>
                     <th>Order Status</th>
                     <td colspan="5">
-                        @if($transaction->order->status=='delivered')
-                        <span class="badge bg-success">Delivered</span>
-                        @elseif($transaction->order->status=='canceled')
-                        <span class="badge bg-danger">Canceled</span>
-                        @else
-                        <span class="badge bg-warning">Ordered</span>
-                        @endif
+                        @php
+                            $status = $transaction->order->status;
+                            $badgeClass = match($status) {
+                                'ordered' => 'bg-warning',
+                                'approved' => 'bg-primary',
+                                'shipped' => 'bg-info',
+                                'delivered' => 'bg-success',
+                                'canceled' => 'bg-danger',
+                                default => 'bg-secondary'
+                            };
+                            $statusLabel = ucfirst($status);
+                        @endphp
+                        <span class="badge {{ $badgeClass }} text-white fw-semibold px-3 py-2"
+                            style="opacity:1 !important;">
+                            {{ $statusLabel }}
+                        </span>
                     </td>
                 </tr>
             </table>
@@ -163,15 +172,33 @@
                     <td>{{$transaction->mode}}</td>
                     <th>Status</th>
                     <td>
-                        @if($transaction->status=='approved')
-                        <span class="badge bg-success">Approved</span>
-                        @elseif($transaction->status=='declined')
-                        <span class="badge bg-danger">Declined</span>
-                        @elseif($transaction->status=='refunded')
-                        <span class="badge bg-secondary">Refunded</span>
-                        @else
-                        <span class="badge bg-warning">Pending</span>
-                        @endif
+                        @switch($transaction->status)
+                        @case('approved')
+                        <span class="badge bg-success text-white fw-semibold px-3 py-2"
+                            style="opacity:1 !important;">Approved</span>
+                        @break
+
+                        @case('declined')
+                        <span class="badge bg-danger text-white fw-semibold px-3 py-2"
+                            style="opacity:1 !important;">Declined</span>
+                        @break
+
+                        @case('refunded')
+                        <span class="badge bg-secondary text-white fw-semibold px-3 py-2"
+                            style="opacity:1 !important;">Refunded</span>
+                        @break
+
+                        @case('settlement')
+                        <span class="badge bg-primary text-white fw-semibold px-3 py-2"
+                            style="opacity:1 !important;">Settlement</span>
+                        @break
+
+                        @default
+                        <span class="badge"
+                            style="background-color:#ffc107; color:#000; font-weight:600; padding:0.5em 1em; opacity:1 !important;">
+                            Pending
+                        </span>
+                        @endswitch
                     </td>
                 </tr>
             </table>
@@ -185,13 +212,33 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="select">
+                            @php
+                            $orderStatuses = [
+                            'ordered' => 'Ordered',
+                            'approved' => 'Approved',
+                            'shipped' => 'Shipped',
+                            'delivered' => 'Delivered',
+                            'canceled' => 'Canceled'
+                            ];
+
+                            // Ambil status transaksi
+                            $txnStatus = $transaction->status;
+                            @endphp
+
                             <select id="order_status" name="order_status">
-                                <option value="ordered" {{$transaction->order->status=="ordered" ? "selected":""}}>
-                                    Ordered</option>
-                                <option value="delivered" {{$transaction->order->status=="delivered" ? "selected":""}}>
-                                    Delivered</option>
-                                <option value="canceled" {{$transaction->order->status=="canceled" ? "selected":""}}>
-                                    Canceled</option>
+                                @foreach ($orderStatuses as $key => $label)
+                                @php
+                                $disabled = false;
+                                // delivered hanya bisa dipilih jika transaction settlement/approved
+                                if ($key == 'delivered' && !in_array($txnStatus, ['settlement','approved'])) {
+                                $disabled = true;
+                                }
+                                @endphp
+                                <option value="{{ $key }}" {{ $transaction->order->status == $key ? 'selected' : '' }}
+                                    {{ $disabled ? 'disabled' : '' }}>
+                                    {{ $label }}
+                                </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>

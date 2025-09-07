@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\WishlistController;
+use Surfsidemedia\Shoppingcart\Facades\Cart;
 
 Auth::routes();
 
@@ -30,6 +31,9 @@ Route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist.inde
 Route::delete('/wishlist/remove/{rowId}',[WishlistController::class,'remove_item_from_wishlist'])->name('wishlist.remove');
 Route::delete('/wishlist/clear',[WishlistController::class,'empty_wishlist'])->name('wishlist.empty');
 Route::post('/wishlist/move-to-cart/{rowId}',[WishlistController::class,'move_to_cart'])->name('wishlist.move.to.cart');
+Route::post('/wishlist/toggle/{id}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+Route::post('/save-address', [CartController::class, 'save_address'])->name('address.save');
 
 Route::get('/checkout',[CartController::class,'checkout'])->name('cart.checkout');
 Route::post('/place-order',[CartController::class,'place_order'])->name('cart.place.order');

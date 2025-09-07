@@ -64,7 +64,7 @@
             </div>
             <div class="col-lg-10">
                 @if(Session::has('status'))
-                    <p class="alert alert-success">{{Session::get('status')}}</p>
+                <p class="alert alert-success">{{Session::get('status')}}</p>
                 @endif
                 <div class="wg-box mt-5 mb-5">
                     <div class="row mb-1">
@@ -96,16 +96,22 @@
                             <tr>
                                 <th>Order Status</th>
                                 <td colspan="5">
-                                    @if($transaction->order->status=='delivered')
-                                    <span class="badge bg-success text-white fw-semibold px-3 py-2"
-                                        style="opacity:1 !important;">Delivered</span>
-                                    @elseif($transaction->order->status=='canceled')
-                                    <span class="badge bg-danger text-white fw-semibold px-3 py-2"
-                                        style="opacity:1 !important;">Canceled</span>
-                                    @else
-                                    <span class="badge"
-                                        style="background-color:#ffc107; color:#000; font-weight:600; padding:0.5em 1em; opacity:1 !important;">Ordered</span>
-                                    @endif
+                                    @php
+                                        $status = $transaction->order->status;
+                                        $badgeClass = match($status) {
+                                            'ordered' => 'bg-warning',
+                                            'approved' => 'bg-primary',
+                                            'shipped' => 'bg-info',
+                                            'delivered' => 'bg-success',
+                                            'canceled' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                        $statusLabel = ucfirst($status);
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-white fw-semibold px-3 py-2"
+                                        style="opacity:1 !important;">
+                                        {{ $statusLabel }}
+                                    </span>
                                 </td>
                             </tr>
                         </table>
@@ -141,7 +147,7 @@
 
                                     <td class="pname">
                                         <div class="image">
-                                            <img src="{{asset('uploads/products/thumbnails')}}/{{$orderitem->product->image}}"
+                                            <img src="{{asset('uploads/products')}}/{{$orderitem->product->image}}"
                                                 alt="" class="image">
                                         </div>
                                         <div class="name">
@@ -149,7 +155,7 @@
                                                 target="_blank" class="body-title-2">{{$orderitem->product->name}}</a>
                                         </div>
                                     </td>
-                                    <td class="text-center">${{$orderitem->price}}</td>
+                                    <td class="text-center">IDR {{$orderitem->price}}</td>
                                     <td class="text-center">{{$orderitem->quantity}}</td>
                                     <td class="text-center">{{$orderitem->product->SKU}}</td>
                                     <td class="text-center">{{$orderitem->product->category->name}}</td>
@@ -197,32 +203,46 @@
                         <table class="table table-striped table-bordered table-transaction">
                             <tr>
                                 <th>Subtotal</th>
-                                <td>${{$transaction->order->subtotal}}</td>
+                                <td>IDR {{$transaction->order->subtotal}}</td>
                                 <th>Tax</th>
-                                <td>${{$transaction->order->tax}}</td>
+                                <td>IDR {{$transaction->order->tax}}</td>
                                 <th>Discount</th>
-                                <td>${{$transaction->order->discount}}</td>
+                                <td>IDR {{$transaction->order->discount}}</td>
                             </tr>
                             <tr>
                                 <th>Total</th>
-                                <td>${{$transaction->order->total}}</td>
+                                <td>IDR {{$transaction->order->total}}</td>
                                 <th>Payment Mode</th>
                                 <td>{{$transaction->mode}}</td>
                                 <th>Status</th>
                                 <td>
-                                    @if($transaction->status=='approved')
+                                    @switch($transaction->status)
+                                    @case('approved')
                                     <span class="badge bg-success text-white fw-semibold px-3 py-2"
                                         style="opacity:1 !important;">Approved</span>
-                                    @elseif($transaction->status=='declined')
+                                    @break
+
+                                    @case('declined')
                                     <span class="badge bg-danger text-white fw-semibold px-3 py-2"
                                         style="opacity:1 !important;">Declined</span>
-                                    @elseif($transaction->status=='refunded')
+                                    @break
+
+                                    @case('refunded')
                                     <span class="badge bg-secondary text-white fw-semibold px-3 py-2"
                                         style="opacity:1 !important;">Refunded</span>
-                                    @else
+                                    @break
+
+                                    @case('settlement')
+                                    <span class="badge bg-primary text-white fw-semibold px-3 py-2"
+                                        style="opacity:1 !important;">Settlement</span>
+                                    @break
+
+                                    @default
                                     <span class="badge"
-                                        style="background-color:#ffc107; color:#000; font-weight:600; padding:0.5em 1em; opacity:1 !important;">Pending</span>
-                                    @endif
+                                        style="background-color:#ffc107; color:#000; font-weight:600; padding:0.5em 1em; opacity:1 !important;">
+                                        Pending
+                                    </span>
+                                    @endswitch
                                 </td>
                             </tr>
                         </table>

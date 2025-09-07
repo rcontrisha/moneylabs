@@ -1,205 +1,213 @@
 @extends('layouts.admin')
 @section('content')
-    <!-- main-content-wrap -->
-    <div class="main-content-inner">
-        <!-- main-content-wrap -->
-        <div class="main-content-wrap">
-            <div class="flex items-center flex-wrap justify-between gap20 mb-27">
-                <h3>Add Product</h3>
-                <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
-                    <li>
-                        <a href="index.html"><div class="text-tiny">Dashboard</div></a>
-                    </li>
-                    <li>
-                        <i class="icon-chevron-right"></i>
-                    </li>
-                    <li>
-                        <a href="all-product.html"><div class="text-tiny">Products</div></a>
-                    </li>
-                    <li>
-                        <i class="icon-chevron-right"></i>
-                    </li>
-                    <li>
-                        <div class="text-tiny">Add product</div>
-                    </li>
-                </ul>
-            </div>
-            <!-- form-add-product -->
-            <form class="tf-section-2 form-add-product" method="POST" enctype="multipart/form-data" action="{{route('admin.product.store')}}" >
-                @csrf
-                <div class="wg-box">
-                    <fieldset class="name">
-                        <div class="body-title mb-10">Product name <span class="tf-color-1">*</span></div>
-                        <input class="mb-10" type="text" placeholder="Enter product name" name="name" tabindex="0" value="" aria-required="true">
-                        <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
-                    </fieldset>
-                    @error("name") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    <fieldset class="name">
-                        <div class="body-title mb-10">Slug <span class="tf-color-1">*</span></div>
-                        <input class="mb-10" type="text" placeholder="Enter product slug" name="slug" tabindex="0" value="" aria-required="true">
-                        <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
-                    </fieldset>
-                    @error("slug") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    <div class="gap22 cols">
-                        <fieldset class="category">
-                            <div class="body-title mb-10">Category <span class="tf-color-1">*</span></div>
-                            <div class="select">
-                                <select class="" name="category_id">
-                                    <option value="">Choose category</option>
-                                    @foreach ($categories as $category)
-                                    <option value="{{$category->id}}">{{$category->name}}</option>
-                                    @endforeach                                                                 
-                                </select>
-                            </div>
-                        </fieldset>
-                        @error("category_id") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                        <fieldset class="brand">
-                            <div class="body-title mb-10">Brand <span class="tf-color-1">*</span></div>
-                            <div class="select">
-                                <select class="" name="brand_id">
-                                    <option value="">Choose Brand</option>
-                                    @foreach ($brands as $brand)
-                                    <option value="{{$brand->id}}">{{$brand->name}}</option>
-                                    @endforeach                                      
-                                </select>
-                            </div>
-                        </fieldset>
-                        @error("brand_id") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    </div>
-                    <fieldset class="shortdescription">
-                        <div class="body-title mb-10">Short Description <span class="tf-color-1">*</span></div>
-                        <textarea class="mb-10 ht-150" name="short_description" placeholder="Short Description" tabindex="0" aria-required="true"></textarea>
-                        <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
-                    </fieldset>
-                    @error("short_description") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    
-                    <fieldset class="description">
-                        <div class="body-title mb-10">Description <span class="tf-color-1">*</span></div>
-                        <textarea class="mb-10" name="description" placeholder="Description" tabindex="0" aria-required="true"></textarea>
-                        <div class="text-tiny">Do not exceed 100 characters when entering the product name.</div>
-                    </fieldset>
-                    @error("description") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                </div>
-                <div class="wg-box">
-                    <fieldset>
-                        <div class="body-title">Upload images <span class="tf-color-1">*</span></div>
-                        <div class="upload-image flex-grow">
-                            <div class="item" id="imgpreview" style="display:none">                            
-                                <img src="{{asset('images/upload/upload-1.png')}}" class="effect8" alt="">
-                            </div>
-                            <div id="upload-file" class="item up-load">
-                                <label class="uploadfile" for="myFile">
-                                    <span class="icon">
-                                        <i class="icon-upload-cloud"></i>
-                                    </span>
-                                    <span class="body-text">Drop your images here or select <span class="tf-color">click to browse</span></span>
-                                    <input type="file" id="myFile" name="image" accept="image/*">
-                                </label>
-                            </div>
-                        </div>
-                    </fieldset> 
-                    @error("image") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    <fieldset>
-                        <div class="body-title mb-10">Upload Gallery Images</div>
-                        <div class="upload-image mb-16">                            
-                            <div  id ="galUpload" class="item up-load">
-                                <label class="uploadfile" for="gFile">
-                                    <span class="icon">
-                                        <i class="icon-upload-cloud"></i>
-                                    </span>
-                                    <span class="text-tiny">Drop your images here or select <span class="tf-color">click to browse</span></span>
-                                    <input type="file" id="gFile" name="images[]" accept="image/*" multiple>
-                                </label>
-                            </div>
-                        </div>                        
-                    </fieldset>
-                    @error("images") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    <div class="cols gap22">
-                        <fieldset class="name">                                                
-                            <div class="body-title mb-10">Regular Price <span class="tf-color-1">*</span></div>
-                            <input class="mb-10" type="text" placeholder="Enter regular price" name="regular_price" tabindex="0" value="" aria-required="true">                                              
-                        </fieldset>
-                        @error("regular_price") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Sale Price <span class="tf-color-1">*</span></div>
-                            <input class="mb-10" type="text" placeholder="Enter sale price" name="sale_price" tabindex="0" value="" aria-required="true">                                              
-                        </fieldset>
-                        @error("sale_price") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    </div>
-                    <div class="cols gap22">
-                        <fieldset class="name">                                                
-                            <div class="body-title mb-10">SKU <span class="tf-color-1">*</span></div>
-                            <input class="mb-10" type="text" placeholder="Enter SKU" name="SKU" tabindex="0" value="" aria-required="true">                                              
-                        </fieldset>
-                        @error("SKU") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Quantity <span class="tf-color-1">*</span></div>
-                            <input class="mb-10" type="text" placeholder="Enter quantity" name="quantity" tabindex="0" value="" aria-required="true">                                              
-                        </fieldset>
-                        @error("quantity") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    </div>
-                    <div class="cols gap22">
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Stock</div>
-                            <div class="select mb-10">
-                                <select class="" name="stock_status">
-                                    <option value="instock">InStock</option>
-                                    <option value="outofstock">Out of Stock</option>                                                        
-                                </select>
-                            </div>                                                
-                        </fieldset>
-                        @error("stock_status") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Featured</div>
-                            <div class="select mb-10">
-                                <select class="" name="featured">
-                                    <option value="0">No</option>
-                                    <option value="1">Yes</option>                                                        
-                                </select>
-                            </div>
-                        </fieldset>
-                        @error("featured") <span class="alert alert-danger text-center">{{$message}}</span> @enderror
-                    </div>
-                    <div class="cols gap10">
-                        <button class="tf-button w-full" type="submit">Add product</button>                                            
-                    </div>
-                </div>
-            </form>
-            <!-- /form-add-product -->
+<div class="main-content-inner">
+    <div class="main-content-wrap">
+        <div class="flex items-center flex-wrap justify-between gap20 mb-27">
+            <h3>Add Product</h3>
+            <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
+                <li><a href="{{ route('admin.products') }}"><div class="text-tiny">Dashboard</div></a></li>
+                <li><i class="icon-chevron-right"></i></li>
+                <li><a href="{{ route('admin.products') }}"><div class="text-tiny">Products</div></a></li>
+                <li><i class="icon-chevron-right"></i></li>
+                <li><div class="text-tiny">Add product</div></li>
+            </ul>
         </div>
-        <!-- /main-content-wrap -->
+
+        <form class="tf-section-2 form-add-product" method="POST" enctype="multipart/form-data" action="{{ route('admin.product.store') }}">
+            @csrf
+
+            {{-- Basic Product Info --}}
+            <div class="wg-box">
+                <fieldset>
+                    <div class="body-title mb-10">Product name <span class="tf-color-1">*</span></div>
+                    <input type="text" name="name" placeholder="Enter product name" value="{{ old('name') }}">
+                </fieldset>
+                @error('name') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                <fieldset>
+                    <div class="body-title mb-10">Slug <span class="tf-color-1">*</span></div>
+                    <input type="text" name="slug" placeholder="Enter slug" value="{{ old('slug') }}">
+                </fieldset>
+                @error('slug') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                <div class="gap22 cols">
+                    <fieldset>
+                        <div class="body-title mb-10">Category <span class="tf-color-1">*</span></div>
+                        <select name="category_id">
+                            <option value="">Choose category</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </fieldset>
+                    @error('category_id') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                    <fieldset>
+                        <div class="body-title mb-10">Brand <span class="tf-color-1">*</span></div>
+                        <select name="brand_id">
+                            <option value="">Choose brand</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                            @endforeach
+                        </select>
+                    </fieldset>
+                    @error('brand_id') <span class="alert alert-danger">{{$message}}</span> @enderror
+                </div>
+
+                <fieldset>
+                    <div class="body-title mb-10">Short Description <span class="tf-color-1">*</span></div>
+                    <textarea name="short_description" placeholder="Short Description">{{ old('short_description') }}</textarea>
+                </fieldset>
+                @error('short_description') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                <fieldset>
+                    <div class="body-title mb-10">Description <span class="tf-color-1">*</span></div>
+                    <textarea name="description" placeholder="Description">{{ old('description') }}</textarea>
+                </fieldset>
+                @error('description') <span class="alert alert-danger">{{$message}}</span> @enderror
+            </div>
+
+            {{-- Images --}}
+            <div class="wg-box">
+                <fieldset>
+                    <div class="body-title">Main Image <span class="tf-color-1">*</span></div>
+                    <input type="file" name="image" accept="image/*">
+                </fieldset>
+                @error('image') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                <fieldset>
+                    <div class="body-title">Gallery Images</div>
+                    <input type="file" name="images[]" accept="image/*" multiple>
+                </fieldset>
+                @error('images') <span class="alert alert-danger">{{$message}}</span> @enderror
+            </div>
+
+            {{-- Variants --}}
+            <div class="wg-box">
+                <div class="body-title mb-10">Product Variants</div>
+
+                {{-- Brand New --}}
+                <div class="variant-block" data-type="brand_new">
+                    <h5>Brand New</h5>
+                    <div class="variant-rows gap10 mb-2">
+                        <div class="gap10 cols variant-row">
+                            <input type="text" class="form-control" placeholder="Size">
+                            <input type="number" class="form-control" placeholder="Regular Price">
+                            <input type="number" class="form-control" placeholder="Sale Price">
+                            <input type="number" class="form-control" placeholder="Quantity">
+                            <button type="button" class="btn-remove">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add" data-type="brand_new">+ Add Size</button>
+                </div>
+
+                {{-- Used --}}
+                <div class="mt-3">
+                    <label>
+                        <input type="checkbox" id="hasUsedVariant"> This product also has a "Used" variant
+                    </label>
+                </div>
+
+                <div class="variant-block mt-2" data-type="used" id="usedVariantBlock" style="display:none;">
+                    <h5>Used</h5>
+                    <div class="variant-rows gap10 mb-2">
+                        <div class="gap10 cols variant-row">
+                            <input type="text" class="form-control" placeholder="Size">
+                            <input type="number" class="form-control" placeholder="Regular Price">
+                            <input type="number" class="form-control" placeholder="Sale Price">
+                            <input type="number" class="form-control" placeholder="Quantity">
+                            <button type="button" class="btn-remove">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add" data-type="used">+ Add More</button>
+                </div>
+
+                <input type="hidden" name="variants" id="variantsInput">
+            </div>
+
+            {{-- Other Info --}}
+            <div class="wg-box">
+                <fieldset>
+                    <div class="body-title mb-10">SKU <span class="tf-color-1">*</span></div>
+                    <input type="text" name="SKU" placeholder="Enter SKU" value="{{ old('SKU') }}">
+                </fieldset>
+                @error('SKU') <span class="alert alert-danger">{{$message}}</span> @enderror
+
+                <fieldset>
+                    <div class="body-title mb-10">Stock Status</div>
+                    <select name="stock_status">
+                        <option value="instock">In Stock</option>
+                        <option value="outofstock">Out of Stock</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <div class="body-title mb-10">Featured</div>
+                    <select name="featured">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </fieldset>
+
+                <button type="submit" class="tf-button w-full mt-3">Add Product</button>
+            </div>
+        </form>
     </div>
-    <!-- /main-content-wrap -->
+</div>
 @endsection
 
-@push("scripts")
-    <script>
-            $(function(){
-                $("#myFile").on("change",function(e){
-                    const photoInp = $("#myFile");                    
-                    const [file] = this.files;
-                    if (file) {
-                        $("#imgpreview img").attr('src',URL.createObjectURL(file));
-                        $("#imgpreview").show();                        
+@push('scripts')
+<script>
+    $(function(){
+        // Toggle Used variant
+        $('#hasUsedVariant').change(function(){
+            $('#usedVariantBlock').toggle(this.checked);
+        });
+
+        // Add new variant row
+        $('.btn-add').click(function(){
+            let type = $(this).data('type');
+            let $block = $('.variant-block[data-type="'+type+'"] .variant-rows');
+            let newRow = `
+                <div class="gap10 cols variant-row">
+                    <input type="text" class="form-control" placeholder="Size">
+                    <input type="number" class="form-control" placeholder="Regular Price">
+                    <input type="number" class="form-control" placeholder="Sale Price">
+                    <input type="number" class="form-control" placeholder="Quantity">
+                    <button type="button" class="btn-remove">Remove</button>
+                </div>
+            `;
+            $block.append(newRow);
+        });
+
+        // Remove variant row
+        $(document).on('click', '.btn-remove', function(){
+            $(this).closest('.variant-row').remove();
+        });
+
+        // On submit, pack all variants into JSON
+        $('form').on('submit', function(){
+            let variants = {};
+
+            $('.variant-block').each(function(){
+                let type = $(this).data('type');
+                let rows = [];
+                $(this).find('.variant-row').each(function(){
+                    let size = $(this).find('input').eq(0).val();
+                    let regular_price = $(this).find('input').eq(1).val();
+                    let sale_price = $(this).find('input').eq(2).val();
+                    let quantity = $(this).find('input').eq(3).val();
+
+                    if(size || regular_price || sale_price || quantity) { // skip empty rows
+                        rows.push({size, regular_price, sale_price, quantity});
                     }
                 });
-                $("#gFile").on("change",function(e){
-                    $(".gitems").remove();
-                    const gFile = $("gFile");
-                    const gphotos = this.files;                    
-                    $.each(gphotos,function(key,val){                        
-                        $("#galUpload").prepend(`<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt=""></div>`);                        
-                    });                    
-                });
-                $("input[name='name']").on("change",function(){
-                    $("input[name='slug']").val(StringToSlug($(this).val()));
-                });
-                
+                if(rows.length) variants[type] = rows;
             });
-            function StringToSlug(Text) {
-                return Text.toLowerCase()
-                .replace(/[^\w ]+/g, "")
-                .replace(/ +/g, "-");
-            }      
-    </script>
+
+            $('#variantsInput').val(JSON.stringify(variants));
+        });
+    });
+
+</script>
 @endpush

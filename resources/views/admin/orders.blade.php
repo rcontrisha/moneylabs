@@ -56,8 +56,8 @@
                                 <th class="text-center">Subtotal</th>
                                 <th class="text-center">Tax</th>
                                 <th class="text-center">Total</th>
-                                {{-- <th class="text-center" style="width:260px;">Address</th> --}}
-                                <th class="text-center">Status</th>
+                                <th class="text-center">Order Status</th>
+                                <th class="text-center">Payment Status</th> {{-- baru --}}
                                 <th class="text-center">Order Date</th>
                                 <th class="text-center">Total Items</th>
                                 <th class="text-center">Delivered On</th>
@@ -73,32 +73,73 @@
                                 <td class="text-center">${{$order->subtotal}}</td>
                                 <td class="text-center">${{$order->tax}}</td>
                                 <td class="text-center">${{$order->total}}</td>
-                                {{-- <td class="text-center">
-                                    <p>{{$order->address}}</p>
-                                <p>{{$order->locality}}</p>
-                                <p>{{$order->city}}, {{$order->state}}, {{$order->zip}}</p>
-                                </td> --}}
+
+                                {{-- Order Status --}}
                                 <td class="text-center">
-                                    @if($order->status=='delivered')
-                                    <span class="badge bg-success text-white fw-semibold px-3 py-2"
-                                        style="opacity: 1 !important;">Delivered</span>
-                                    @elseif($order->status=='canceled')
-                                    <span class="badge bg-danger text-white fw-semibold px-3 py-2"
-                                        style="opacity: 1 !important;">Canceled</span>
-                                    @else
-                                    <span class="badge"
-                                        style="background-color: #ffc107; color: #000; font-weight: 600; padding: 0.5em 1em; opacity: 1 !important;">Ordered</span>
-                                    @endif
+                                    @php
+                                        $status = $order->status;
+                                        $badgeClass = match($status) {
+                                            'ordered' => 'bg-warning',
+                                            'approved' => 'bg-primary',
+                                            'shipped' => 'bg-info',
+                                            'delivered' => 'bg-success',
+                                            'canceled' => 'bg-danger',
+                                            default => 'bg-secondary'
+                                        };
+                                        $statusLabel = ucfirst($status);
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }} text-white fw-semibold px-3 py-2"
+                                        style="opacity:1 !important;">
+                                        {{ $statusLabel }}
+                                    </span>
                                 </td>
+
+                                {{-- Payment Status --}}
+                                <td class="text-center">
+                                    @switch($order->transaction->status ?? 'pending')
+                                    @case('settlement')
+                                    <span class="badge bg-primary d-inline-block text-wrap"
+                                        style="white-space: normal; line-height:1.2;">
+                                        Paid (Settlement)
+                                    </span>
+                                    @break
+
+                                    @case('pending')
+                                    <span class="badge bg-warning text-dark d-inline-block text-wrap"
+                                        style="white-space: normal; line-height:1.2;">
+                                        Pending Payment
+                                    </span>
+                                    @break
+
+                                    @case('expire')
+                                    <span class="badge bg-secondary d-inline-block text-wrap"
+                                        style="white-space: normal; line-height:1.2;">
+                                        Expired
+                                    </span>
+                                    @break
+
+                                    @case('deny')
+                                    <span class="badge bg-dark d-inline-block text-wrap"
+                                        style="white-space: normal; line-height:1.2;">
+                                        Denied
+                                    </span>
+                                    @break
+
+                                    @default
+                                    <span class="badge bg-info d-inline-block text-wrap"
+                                        style="white-space: normal; line-height:1.2;">
+                                        {{ ucfirst($order->transaction->status ?? 'Unknown') }}
+                                    </span>
+                                    @endswitch
+                                </td>
+
                                 <td class="text-center">{{$order->created_at}}</td>
                                 <td class="text-center">{{$order->orderItems->count()}}</td>
                                 <td>{{$order->delivered_date}}</td>
                                 <td class="text-center">
                                     <a href="{{route('admin.order.items',['order_id'=>$order->id])}}">
                                         <div class="list-icon-function view-icon">
-                                            <div class="item eye">
-                                                <i class="icon-eye"></i>
-                                            </div>
+                                            <div class="item eye"><i class="icon-eye"></i></div>
                                         </div>
                                     </a>
                                 </td>

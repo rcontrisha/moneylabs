@@ -20,15 +20,28 @@ class CartController extends Controller
     public function index()
     {
         $cartItems = Cart::instance('cart')->content();
+        Log::info($cartItems);
         return view('cart',compact('cartItems'));
     }
 
     public function addToCart(Request $request)
     {
-        Cart::instance('cart')->add($request->id,$request->name,$request->quantity,$request->price)->associate('App\Models\Product');        
-        session()->flash('success', 'Product is Added to Cart Successfully !');        
-        return response()->json(['status'=>200,'message'=>'Success ! Item Successfully added to your cart.']);
-    } 
+        Cart::instance('cart')->add([
+            'id'      => $request->id,
+            'name'    => $request->name,
+            'qty'     => $request->quantity,
+            'price'   => $request->price,
+            'options' => [
+                'size'      => $request->size,
+                'condition' => $request->condition,
+            ]
+        ])->associate('App\Models\Product');
+
+        return response()->json([
+            'status'  => 200,
+            'message' => 'Success ! Item Successfully added to your cart.'
+        ]);
+    }
 
     public function increase_item_quantity($rowId)
     {
@@ -141,19 +154,19 @@ class CartController extends Controller
                 'landmark' => 'required'
             ]);
 
-            $address = Address::create([
-                'user_id' => $user_id,
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'zip' => $request->zip,
-                'state' => $request->state,
-                'city' => $request->city,
-                'address' => $request->address,
-                'locality' => $request->locality,
-                'landmark' => $request->landmark,
-                'country' => '',
-                'isdefault' => true,
-            ]);
+            $address = new Address();
+            $address->user_id = $user_id;
+            $address->name = $request->name;
+            $address->phone = $request->phone;
+            $address->zip = $request->zip;
+            $address->state = $request->state;
+            $address->city = $request->city;
+            $address->address = $request->address;
+            $address->locality = $request->locality;
+            $address->landmark = $request->landmark;
+            $address->country = 'Indonesia';
+            $address->isdefault = true;
+            $address->save();
         }
 
         $this->setAmountForCheckout();
@@ -204,6 +217,50 @@ class CartController extends Controller
             'snap_token' => $snapToken,
             'message' => 'Proceed to payment',
             'status' => 200,
+        ]);
+    }
+
+    public function save_address(Request $request)
+    {
+        $user_id = Auth::id();
+
+        $request->validate([
+            'name'     => 'required',
+            'phone'    => 'required',
+            'zip'      => 'required',
+            'state'    => 'required',
+            'city'     => 'required',
+            'address'  => 'required',
+            'locality' => 'required',
+            'landmark' => 'required',
+        ]);
+
+        // cek address existing
+        $address = Address::where('user_id', $user_id)
+            ->where('isdefault', true)
+            ->first();
+
+        if (!$address) {
+            $address = new Address();
+            $address->user_id   = $user_id;
+            $address->isdefault = true;
+        }
+
+        // isi manual (bypass fillable)
+        $address->name     = $request->name;
+        $address->phone    = $request->phone;
+        $address->zip      = $request->zip;
+        $address->state    = $request->state;
+        $address->city     = $request->city;
+        $address->address  = $request->address;
+        $address->locality = $request->locality;
+        $address->landmark = $request->landmark;
+        $address->country  = 'Indonesia';
+        $address->save();
+
+        return response()->json([
+            'message' => 'Address saved successfully!',
+            'address' => $address
         ]);
     }
 
@@ -407,8 +464,14 @@ class CartController extends Controller
         }
     }
 
-    public function confirmation()
+    public function confirmation(Request $request)
     {
-        return view('order-confirmation');
+        $orderCode = $request->query('order_id');
+
+        $order = Order::with('orderItems.product')
+            ->where('order_code', $orderCode)
+            ->firstOrFail();
+
+        return view('order-confirmation', compact('order'));
     }
 }

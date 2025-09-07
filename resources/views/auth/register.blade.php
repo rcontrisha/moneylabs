@@ -16,69 +16,56 @@
                 aria-labelledby="register-tab">
                 <div class="register-form">
                     <form method="POST" action="{{ route('register') }}" name="register-form" class="needs-validation"
-                        novalidate="">
+                        novalidate>
                         @csrf
                         <div class="form-floating mb-3">
                             <input class="form-control form-control_gray @error('name') is-invalid @enderror"
-                                name="name" value="{{ old('name') }}" required="" autocomplete="name" autofocus="">
+                                name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
                             <label for="name">Name</label>
                             @error('name')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                            @enderror
-                        </div>
-                        <div class="pb-3"></div>
-                        <div class="form-floating mb-3">
-                            <input id="email" type="email"
-                                class="form-control form-control_gray @error('email') is-invalid @enderror" name="email"
-                                value="{{ old('email') }}" required="" autocomplete="email">
-                            <label for="email">Email address *</label>
-                            @error('email')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                             @enderror
                         </div>
 
-                        <div class="pb-3"></div>
+                        <div class="form-floating mb-3">
+                            <input id="email" type="email"
+                                class="form-control form-control_gray @error('email') is-invalid @enderror" name="email"
+                                value="{{ old('email') }}" required autocomplete="email">
+                            <label for="email">Email address *</label>
+                            @error('email')
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                            @enderror
+                        </div>
 
                         <div class="form-floating mb-3">
                             <input id="mobile" type="text"
                                 class="form-control form-control_gray @error('mobile') is-invalid @enderror"
-                                name="mobile" value="{{ old('mobile') }}" required="" autocomplete="mobile">
+                                name="mobile" value="{{ old('mobile') }}" required autocomplete="mobile">
                             <label for="mobile">Mobile *</label>
                             @error('mobile')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                             @enderror
                         </div>
-
-                        <div class="pb-3"></div>
 
                         <div class="form-floating mb-3">
                             <input id="password" type="password"
                                 class="form-control form-control_gray @error('password') is-invalid @enderror"
-                                name="password" required="" autocomplete="new-password">
+                                name="password" required autocomplete="new-password">
                             <label for="password">Password *</label>
                             @error('password')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                             @enderror
                         </div>
 
                         <div class="form-floating mb-3">
                             <input id="password-confirm" type="password" class="form-control form-control_gray"
-                                name="password_confirmation" required="" autocomplete="new-password">
+                                name="password_confirmation" required autocomplete="new-password">
                             <label for="password">Confirm Password *</label>
                         </div>
 
                         <div class="d-flex align-items-center mb-3 pb-2">
                             <p class="m-0">Your personal data will be used to support your experience throughout this
-                                website, to
-                                manage access to your account, and for other purposes described in our privacy policy.
+                                website, to manage access to your account, and for other purposes described in our privacy policy.
                             </p>
                         </div>
 
@@ -95,3 +82,19 @@
     </section>
 </main>
 @endsection
+
+@push('scripts')
+@if(session('success'))
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: "{{ session('success') }}",
+        confirmButtonText: 'OK'
+    }).then(() => {
+        window.location.href = "{{ route('login') }}";
+    });
+</script>
+@endif
+@endpush

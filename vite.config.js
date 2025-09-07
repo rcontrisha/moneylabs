@@ -11,4 +11,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host: '0.0.0.0',   // biar bisa diakses dari luar (ngrok, LAN, dll)
+        port: 5173,        // default vite
+        hmr: {
+            host: 'localhost', // kalau mau stabil, bisa ganti ke subdomain ngrok
+        },
+    },
 });
