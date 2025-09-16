@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
@@ -66,6 +67,28 @@
             filter: brightness(0) saturate(100%) invert(53%) sepia(88%) saturate(437%) hue-rotate(95deg) brightness(95%) contrast(95%);
         }
 
+        /* Search icon wrapper (posisi absolut di dalam form relative) */
+        .search-icon-wrapper{
+            position: absolute;
+            left: 12px;                 /* jarak dari tepi kiri input */
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;       /* klik melewati icon ke input */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Space agar teks input tidak nabrak icon */
+        .search-input{
+            padding-left: 40px !important;        /* atur ruang untuk icon + gap */
+            padding-inline-start: 40px !important;/* support RTL/browsers */
+            box-sizing: border-box;
+        }
+
+        /* Pastikan parent form relative supaya ikon absolut posisinya benar */
+        .search-form{ 
+            position: relative; 
+        }
     </style>
 </head>
 
@@ -86,11 +109,28 @@
             </nav>
 
             <div class="icons" style="display: flex; align-items: center; gap: 8px;">
-                {{-- Search --}}
-                <a href="{{ route('shop.index') }}" title="Search"
-                    class="{{ request()->routeIs('shop.index') ? 'active' : '' }}">
-                    <img src="{{ asset('assets/icons/search.png') }}" alt="Search">
-                </a>
+                <!-- Search bar (selalu tampil) -->
+                <div id="searchBar" class="ml-3" style="width: 16rem;">
+                    <form action="{{ route('shop.index') }}" method="GET" class="search-form">
+                        <!-- icon (absolutely positioned) -->
+                        <div class="search-icon-wrapper" aria-hidden="true">
+                            <svg class="" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                            </svg>
+                        </div>
+
+                        <!-- input: tambahkan class search-input -->
+                        <input
+                            type="search"
+                            id="default-search"
+                            name="q"
+                            value="{{ request('q') }}"
+                            class="form-control search-input"
+                            placeholder="Cari produk..."
+                            aria-label="Cari produk"
+                        />
+                    </form>
+                </div>
 
                 {{-- Wishlist --}}
                 <a href="{{ route('wishlist.index') }}" title="Wishlist"
@@ -196,6 +236,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById("default-search");
+            const searchForm = searchInput.closest("form");
+
+            // listen perubahan input
+            searchInput.addEventListener("input", function() {
+                if (this.value === "") {
+                    searchForm.submit(); // submit otomatis biar tampil all product
+                }
+            });
+        });
     </script>
     @stack("scripts")
 </body>

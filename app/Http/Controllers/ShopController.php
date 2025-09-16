@@ -17,6 +17,7 @@ class ShopController extends Controller
         $f_categories = is_array($request->query('categories')) ? implode(',', $request->query('categories')) : ($request->query('categories') ?? '');
         $min_price = $request->query('min') ? $request->query('min') : 1;
         $max_price = $request->query('max') ? $request->query('max') : 10000000;
+        $keyword = $request->query('q'); // ✅ ambil keyword pencarian
 
         // --- FIX parsing conditions jadi array
         $f_conditions = $request->query('conditions');
@@ -36,6 +37,14 @@ class ShopController extends Controller
 
         // Get all products
         $query = Product::query();
+
+        // ✅ filter pencarian keyword
+        if ($keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                ->orWhere('description', 'like', "%{$keyword}%");
+            });
+        }
 
         // Apply filters: brand & category
         $query->where(function ($query) use ($f_brands) {
