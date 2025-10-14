@@ -344,56 +344,56 @@
                         <div class="col-md-6">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="name" value="{{old('name')}}">
-                                <label for="name">Full Name *</label>
+                                <label for="name">Nama Lengkap *</label>
                                 <span class="text-danger">@error('name') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="phone" value="{{old('phone')}}">
-                                <label for="phone">Phone Number *</label>
+                                <label for="phone">Nomor Telepon *</label>
                                 <span class="text-danger">@error('phone') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="zip" value="{{old('zip')}}">
-                                <label for="zip">Pincode *</label>
+                                <label for="zip">Kode Pos *</label>
                                 <span class="text-danger">@error('zip') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating mt-3 mb-3">
                                 <input type="text" class="form-control" name="state" value="{{old('state')}}">
-                                <label for="state">State *</label>
+                                <label for="state">Provinsi *</label>
                                 <span class="text-danger">@error('state') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="city" value="{{old('city')}}">
-                                <label for="city">Town / City *</label>
+                                <label for="city">Kabupaten/Kota *</label>
                                 <span class="text-danger">@error('city') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="address" value="{{old('address')}}">
-                                <label for="address">House no, Building Name *</label>
+                                <label for="address">Nama Gedung, Nomor Rumah *</label>
                                 <span class="text-danger">@error('address') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="locality" value="{{old('locality')}}">
-                                <label for="locality">Road Name, Area, Colony *</label>
+                                <label for="locality">Nama Jalan, Area, Kawasan/Kompleks *</label>
                                 <span class="text-danger">@error('locality') {{$message}} @enderror</span>
                             </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-floating my-3">
                                 <input type="text" class="form-control" name="landmark" value="{{old('landmark')}}">
-                                <label for="landmark">Landmark *</label>
+                                <label for="landmark">Detail Alamat (Patokan) *</label>
                                 <span class="text-danger">@error('landmark') {{$message}} @enderror</span>
                             </div>
                         </div>
@@ -453,7 +453,7 @@
                                         <td class="text-right">Free</td>
                                     </tr>
                                     <tr>
-                                        <th>VAT</th>
+                                        <th>PPN (11%)</th>
                                         <td class="text-right">
                                             IDR
                                             {{ number_format((float) str_replace(',', '', Session("discounts")["tax"]), 0, ',', '.') }}
@@ -483,7 +483,7 @@
                                         <td class="text-right">Free</td>
                                     </tr>
                                     <tr>
-                                        <th>VAT</th>
+                                        <th>PPN (11%)</th>
                                         <td class="text-right">
                                             IDR
                                             {{ number_format((float) str_replace(',', '', Cart::instance('cart')->tax()), 0, ',', '.') }}

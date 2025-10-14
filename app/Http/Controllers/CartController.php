@@ -405,6 +405,7 @@ class CartController extends Controller
                 case 'capture':
                 case 'settlement':
                     $transaction->status = 'settlement';
+                    $transaction->mode = $notification->payment_type;
                     Log::info("[Midtrans] Transaction settled for order_id: {$orderId}");
                     break;
 
@@ -468,10 +469,12 @@ class CartController extends Controller
     {
         $orderCode = $request->query('order_id');
 
-        $order = Order::with('orderItems.product')
+        $order = Order::with(['orderItems.product', 'transaction'])
             ->where('order_code', $orderCode)
             ->firstOrFail();
 
-        return view('order-confirmation', compact('order'));
+        $transaction = $order->transaction; // ambil relasi transaksi
+
+        return view('order-confirmation', compact('order', 'transaction'));
     }
 }

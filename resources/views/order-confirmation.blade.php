@@ -94,8 +94,9 @@
                 </div>
                 <div class="flex-fill">
                     <span class="d-block mb-1">Payment Method</span>
-                    <strong
-                        class="d-block">{{ $order->type == 'cod' ? 'Cash on Delivery' : 'Direct Bank Transfer' }}</strong>
+                    <strong class="d-block">
+                        {{ $transaction ? strtoupper($transaction->mode) : '-' }}
+                    </strong>
                 </div>
             </div>
         </div>

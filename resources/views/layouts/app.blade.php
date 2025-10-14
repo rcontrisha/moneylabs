@@ -148,7 +148,7 @@
                 @endphp
                 @if($utype === 'ADM')
                 <a href="{{ route('admin.index') }}" title="Admin Dashboard"
-                    style="display: flex; align-items: center; gap: 6px;">
+                    style="display: flex; align-items: center; gap: 6px; text-decoration:none;">
                     <img src="{{ asset('assets/icons/profile.png') }}" alt="Admin">
                     <span style="font-size: 14px; color: #222; font-weight: 500;">
                         Admin

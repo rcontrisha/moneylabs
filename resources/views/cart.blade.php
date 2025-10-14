@@ -82,11 +82,11 @@
                 <table class="cart-table">
                     <thead>
                         <tr>
-                            <th>Product</th>
+                            <th class="text-center">Product</th>
                             <th></th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Subtotal</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -222,7 +222,7 @@
                                     <td class="text-right">Free</td>
                                 </tr>
                                 <tr>
-                                    <th>VAT</th>
+                                    <th>PPN (11%)</th>
                                     <td>IDR {{Session("discounts")["tax"]}}</td>
                                 </tr>
                                 <tr class="cart-total">
@@ -243,7 +243,7 @@
                                     <td class="text-right">Free</td>
                                 </tr>
                                 <tr>
-                                    <th>VAT</th>
+                                    <th>PPN (11%)</th>
                                     <td>IDR {{Cart::instance('cart')->tax()}}</td>
                                 </tr>
                                 <tr class="cart-total">
