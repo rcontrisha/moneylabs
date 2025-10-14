@@ -50,8 +50,8 @@
                     <table class="table table-striped table-bordered">
                         <thead>
                             <tr>
-                                <th style="width: 80px">Order No</th>
-                                <th>Name</th>
+                                <th class="text-center">Order No</th>
+                                <th class="text-center">Name</th>
                                 <th class="text-center">Phone</th>
                                 <th class="text-center">Subtotal</th>
                                 <th class="text-center">Tax</th>
@@ -70,9 +70,9 @@
                                 <td class="text-center">{{"1" . str_pad($order->id,4,"0",STR_PAD_LEFT)}}</td>
                                 <td class="text-center">{{$order->name}}</td>
                                 <td class="text-center">{{$order->phone}}</td>
-                                <td class="text-center">${{$order->subtotal}}</td>
-                                <td class="text-center">${{$order->tax}}</td>
-                                <td class="text-center">${{$order->total}}</td>
+                                <td class="text-center">Rp{{$order->subtotal}}</td>
+                                <td class="text-center">Rp{{$order->tax}}</td>
+                                <td class="text-center">Rp{{$order->total}}</td>
 
                                 {{-- Order Status --}}
                                 <td class="text-center">
@@ -126,7 +126,7 @@
                                     @break
 
                                     @default
-                                    <span class="badge bg-info d-inline-block text-wrap"
+                                    <span class="badge bg-danger d-inline-block text-wrap"
                                         style="white-space: normal; line-height:1.2;">
                                         {{ ucfirst($order->transaction->status ?? 'Unknown') }}
                                     </span>

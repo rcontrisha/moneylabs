@@ -92,7 +92,6 @@
                             <th class="text-center">SKU</th>
                             <th class="text-center">Category</th>
                             <th class="text-center">Brand</th>
-                            <th class="text-center">Options</th>
                             <th class="text-center">Return Status</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -103,7 +102,7 @@
 
                             <td class="pname">
                                 <div class="image">
-                                    <img src="{{asset('uploads/products/thumbnails')}}/{{$orderitem->product->image}}"
+                                    <img src="{{ asset('uploads/products/'.$orderitem->product->image) }}"
                                         alt="" class="image">
                                 </div>
                                 <div class="name">
@@ -111,12 +110,11 @@
                                         target="_blank" class="body-title-2">{{$orderitem->product->name}}</a>
                                 </div>
                             </td>
-                            <td class="text-center">${{$orderitem->price}}</td>
+                            <td class="text-center">Rp{{$orderitem->price}}</td>
                             <td class="text-center">{{$orderitem->quantity}}</td>
                             <td class="text-center">{{$orderitem->product->SKU}}</td>
                             <td class="text-center">{{$orderitem->product->category->name}}</td>
                             <td class="text-center">{{$orderitem->product->brand->name}}</td>
-                            <td class="text-center">{{$orderitem->options}}</td>
                             <td class="text-center">{{$orderitem->rstatus == 0 ? "No":"Yes"}}</td>
                             <td class="text-center">
                                 <a href="{{route('shop.product.details',["product_slug"=>$orderitem->product->slug])}}"
@@ -159,15 +157,15 @@
             <table class="table table-striped table-bordered table-transaction">
                 <tr>
                     <th>Subtotal</th>
-                    <td>${{$transaction->order->subtotal}}</td>
+                    <td>Rp{{$transaction->order->subtotal}}</td>
                     <th>Tax</th>
-                    <td>${{$transaction->order->tax}}</td>
+                    <td>Rp{{$transaction->order->tax}}</td>
                     <th>Discount</th>
-                    <td>${{$transaction->order->discount}}</td>
+                    <td>Rp{{$transaction->order->discount}}</td>
                 </tr>
                 <tr>
                     <th>Total</th>
-                    <td>${{$transaction->order->total}}</td>
+                    <td>Rp{{$transaction->order->total}}</td>
                     <th>Payment Mode</th>
                     <td>{{$transaction->mode}}</td>
                     <th>Status</th>
@@ -214,11 +212,11 @@
                         <div class="select">
                             @php
                             $orderStatuses = [
-                            'ordered' => 'Ordered',
-                            'approved' => 'Approved',
-                            'shipped' => 'Shipped',
-                            'delivered' => 'Delivered',
-                            'canceled' => 'Canceled'
+                                'ordered' => 'Ordered',
+                                'approved' => 'Approved',
+                                'shipped' => 'Shipped',
+                                'delivered' => 'Delivered',
+                                'canceled' => 'Canceled'
                             ];
 
                             // Ambil status transaksi

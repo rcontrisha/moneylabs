@@ -319,61 +319,62 @@ class AdminController extends Controller
     public function update_product(Request $request)
     {
         $request->validate([
-            'name'=>'required',
-            'slug'=>'required|unique:products,slug,'.$request->id,
-            'category_id'=>'required',
-            'brand_id'=>'required',            
-            'short_description'=>'required',
-            'description'=>'required',
-            'SKU'=>'required',
-            'stock_status'=>'required',
-            'featured'=>'required',
-            'quantity'=>'required',
-            'image'=>'mimes:png,jpg,jpeg|max:2048'            
+            'name' => 'required',
+            'slug' => 'required|unique:products,slug,' . $request->id,
+            'category_id' => 'required',
+            'brand_id' => 'required',
+            'short_description' => 'required',
+            'description' => 'required',
+            'stock_status' => 'required',
+            'featured' => 'required',
+            'image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
         ]);
-        
-        $product = Product::find($request->id);
+
+        $product = Product::findOrFail($request->id);
         $product->name = $request->name;
-        $product->slug = Str::slug($request->name);
+        $product->slug = $request->slug;
+        $product->category_id = $request->category_id;
+        $product->brand_id = $request->brand_id;
         $product->short_description = $request->short_description;
         $product->description = $request->description;
-        $product->SKU = $request->SKU;
         $product->stock_status = $request->stock_status;
         $product->featured = $request->featured;
-        $product->quantity = $request->quantity;
+
+        // handle variants JSON
+        if (!empty($request->variants)) {
+            $decoded = json_decode($request->variants, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $product->variants = json_encode($decoded, JSON_PRETTY_PRINT);
+            }
+        }
+
         $current_timestamp = Carbon::now()->timestamp;
-        
-        if($request->hasFile('image'))
-        {        
-            $product->image = $request->image;
-            $file_extention = $request->file('image')->extension();            
-            $file_name = $current_timestamp . '.' . $file_extention;
-            $path = $request->image->storeAs('products', $file_name, 'public_uploads');
+
+        // main image
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = $current_timestamp . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('products', $filename, 'public_uploads');
             $product->image = $path;
         }
-        $gallery_arr = array();
-        $gallery_images = "";
-        $counter = 1;
-        if($request->hasFile('images'))
-        {
-            $allowedfileExtension=['jpg','png','jpeg'];
-            $files = $request->file('images');
-            foreach($files as $file){                
-                $gextension = $file->getClientOriginalExtension();                                
-                $check=in_array($gextension,$allowedfileExtension);            
-                if($check)
-                {
-                    $gfilename = $current_timestamp . "-" . $counter . "." . $gextension;                    
-                    $this->GenerateThumbnailsImage($file, $gfilename);
-                    array_push($gallery_arr,$gfilename);
-                    $counter = $counter + 1;
-                }
+
+        // gallery images
+        if ($request->hasFile('images')) {
+            $gallery_arr = [];
+            $counter = 1;
+            foreach ($request->file('images') as $file) {
+                $ext = $file->getClientOriginalExtension();
+                $filename = $current_timestamp . '-' . $counter . '.' . $ext;
+                $file->storeAs('products', $filename, 'public_uploads');
+                $gallery_arr[] = $filename;
+                $counter++;
             }
-            $gallery_images = implode(', ', $gallery_arr);
-            $product->images = $gallery_images;
+            $product->images = implode(', ', $gallery_arr);
         }
-        $product->save();       
-        return redirect()->route('admin.products')->with('status','Record has been updated successfully !');
+
+        $product->save();
+
+        return redirect()->route('admin.products')->with('status', 'Product updated successfully!');
     }
 
     public function delete_product($id)
