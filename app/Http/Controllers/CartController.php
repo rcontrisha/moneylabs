@@ -395,6 +395,9 @@ class CartController extends Controller
             $orderId = $notification->order_id;
             $transaction = Transaction::where('order_code', $orderId)->first();
 
+            // <-- Tambahan: Ambil juga data order
+            $order = Order::where('order_code', $orderId)->first();
+
             if (!$transaction) {
                 Log::warning("[Midtrans] Transaction not found for order_id: {$orderId}");
                 return response()->json(['error' => 'Transaction not found'], 404);
@@ -406,6 +409,14 @@ class CartController extends Controller
                 case 'settlement':
                     $transaction->status = 'settlement';
                     $transaction->mode = $notification->payment_type;
+
+                    // <-- Logika Baru: Generate Invoice jika belum ada
+                    if (is_null($order->invoice_path)) {
+                        $invoiceController = new InvoiceController();
+                        $invoiceController->generateInvoice($order);
+                        Log::info("[Invoice] Invoice generated for order_id: {$orderId}");
+                    }
+
                     Log::info("[Midtrans] Transaction settled for order_id: {$orderId}");
                     break;
 
@@ -427,6 +438,8 @@ class CartController extends Controller
             }
 
             $transaction->save();
+            $order->save();
+        
             Log::info("[Midtrans] Transaction updated successfully for order_id: {$orderId}");
 
             return response()->json(['status' => 'ok']);

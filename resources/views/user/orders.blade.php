@@ -46,6 +46,7 @@
                                     <th class="text-center">Items</th>
                                     <th class="text-center">Delivered On</th>
                                     <th></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -59,16 +60,16 @@
                                     <td class="text-center">IDR {{$order->total}}</td>
                                     <td class="text-center">
                                         @php
-                                            $status = $order->status;
-                                            $badgeClass = match($status) {
-                                                'ordered' => 'bg-warning',
-                                                'approved' => 'bg-primary',
-                                                'shipped' => 'bg-info',
-                                                'delivered' => 'bg-success',
-                                                'canceled' => 'bg-danger',
-                                                default => 'bg-secondary'
-                                            };
-                                            $statusLabel = ucfirst($status);
+                                        $status = $order->status;
+                                        $badgeClass = match($status) {
+                                        'ordered' => 'bg-warning',
+                                        'approved' => 'bg-primary',
+                                        'shipped' => 'bg-info',
+                                        'delivered' => 'bg-success',
+                                        'canceled' => 'bg-danger',
+                                        default => 'bg-secondary'
+                                        };
+                                        $statusLabel = ucfirst($status);
                                         @endphp
                                         <span class="badge {{ $badgeClass }} text-white fw-semibold px-3 py-2"
                                             style="opacity:1 !important;">
@@ -86,6 +87,15 @@
                                                 </div>
                                             </div>
                                         </a>
+                                    </td>
+                                    <td>
+                                        {{-- Tombol Download Invoice --}}
+                                        @if ($order->invoice_path)
+                                        <a href="{{ asset('storage/' . $order->invoice_path) }}"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="fas fa-download me-1"></i> Invoice
+                                        </a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
