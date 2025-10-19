@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Coupon;
@@ -20,9 +21,61 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return view("admin.index");
+        // ===== Statistik Utama =====
+        $totalOrders = Order::count();
+        $totalAmount = Order::sum('total');
+
+        $pendingOrdersCount = Order::where('status', 'ordered')->count();
+        $pendingOrdersAmount = Order::where('status', 'ordered')->sum('total');
+        $deliveredOrdersCount = Order::where('status', 'delivered')->count();
+        $deliveredOrdersAmount = Order::where('status', 'delivered')->sum('total');
+        $canceledOrdersCount = Order::where('status', 'canceled')->count();
+        $canceledOrdersAmount = Order::where('status', 'canceled')->sum('total');
+
+        $recentOrders = Order::with('orderItems')->latest()->take(5)->get();
+
+        // ===== Persiapan Data untuk Grafik =====
+        $monthlyData = Order::select(
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+                DB::raw("SUM(total) as revenue"),
+                DB::raw("COUNT(*) as orders"),
+                DB::raw("SUM(CASE WHEN status = 'ordered' THEN 1 ELSE 0 END) as pending"),
+                DB::raw("SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered"),
+                DB::raw("SUM(CASE WHEN status = 'canceled' THEN 1 ELSE 0 END) as canceled")
+            )
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
+
+        // Buat array untuk chart
+        $chartLabels = $monthlyData->pluck('month')->map(function ($m) {
+            return \Carbon\Carbon::createFromFormat('Y-m', $m)->format('M Y');
+        });
+        $chartRevenue = $monthlyData->pluck('revenue');
+        $chartOrders = $monthlyData->pluck('orders');
+        $chartPending = $monthlyData->pluck('pending');
+        $chartDelivered = $monthlyData->pluck('delivered');
+        $chartCanceled = $monthlyData->pluck('canceled');
+
+        return view('admin.index', compact(
+            'totalOrders',
+            'totalAmount',
+            'pendingOrdersCount',
+            'pendingOrdersAmount',
+            'deliveredOrdersCount',
+            'deliveredOrdersAmount',
+            'canceledOrdersCount',
+            'canceledOrdersAmount',
+            'recentOrders',
+            'chartLabels',
+            'chartRevenue',
+            'chartOrders',
+            'chartPending',
+            'chartDelivered',
+            'chartCanceled'
+        ));
     }
-    
+
     public function brands()
     {
             $brands = Brand::orderBy('id','DESC')->paginate(10);
