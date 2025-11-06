@@ -48,6 +48,13 @@
                             @enderror
                         </div>
 
+                        {{-- Forgot password --}}
+                        <div class="mb-3 text-end">
+                            <a href="{{ route('password.request') }}" class="btn-text" style="color:#00757F;">
+                                Forgot Password?
+                            </a>
+                        </div>
+
                         {{-- Button --}}
                         <button class="btn btn-primary w-100 text-uppercase" type="submit">Log In</button>
 

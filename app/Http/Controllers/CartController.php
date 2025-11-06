@@ -75,7 +75,12 @@ class CartController extends Controller
         $coupon_code = $request->coupon_code;
         if(isset($coupon_code))
         {
-            $coupon = Coupon::where('code',$coupon_code)->where('expiry_date','>=',Carbon::today())->where('cart_value','<=',Cart::instance('cart')->subtotal())->first();
+            // gunakan subtotal numeric tanpa thousand separator
+            $cartSubtotal = (float) Cart::instance('cart')->subtotal(2, '.', '');
+            $coupon = Coupon::where('code',$coupon_code)
+                        ->where('expiry_date','>=',Carbon::today())
+                        ->where('cart_value','<=',$cartSubtotal)
+                        ->first();
             if(!$coupon)
             {
                 return back()->with('error','Invalid coupon code!');
@@ -99,22 +104,25 @@ class CartController extends Controller
         $discount = 0;
         if(session()->has('coupon'))
         {
+            // ambil subtotal numeric (tanpa thousand separator) dan cast ke float
+            $subtotal = (float) Cart::instance('cart')->subtotal(2, '.', '');
             if(session()->get('coupon')['type'] == 'fixed')
             {
-                $discount = session()->get('coupon')['value'];
+                $discount = (float) session()->get('coupon')['value'];
             }
             else
             {
-                $discount = (Cart::instance('cart')->subtotal() * session()->get('coupon')['value'])/100;
+                $discount = ($subtotal * session()->get('coupon')['value'])/100;
             }
-            $subtotalAfterDiscount = Cart::instance('cart')->subtotal() - $discount;
+            $subtotalAfterDiscount = max($subtotal - $discount, 0);
             $taxAfterDiscount = ($subtotalAfterDiscount * config('cart.tax'))/100;
             $totalAfterDiscount = $subtotalAfterDiscount + $taxAfterDiscount; 
             session()->put('discounts',[
-                'discount' => number_format(floatval($discount),2,'.',''),
-                'subtotal' => number_format(floatval(Cart::instance('cart')->subtotal() - $discount),2,'.',''),
-                'tax' => number_format(floatval((($subtotalAfterDiscount * config('cart.tax'))/100)),2,'.',''),
-                'total' => number_format(floatval($subtotalAfterDiscount + $taxAfterDiscount),2,'.','')
+                // simpan sebagai string numeric (dua desimal) supaya konsisten
+                'discount' => number_format($discount,2,'.',''),
+                'subtotal' => number_format($subtotalAfterDiscount,2,'.',''),
+                'tax' => number_format($taxAfterDiscount,2,'.',''),
+                'total' => number_format($totalAfterDiscount,2,'.','')
             ]);            
         }
     }
@@ -469,11 +477,12 @@ class CartController extends Controller
         }
         else
         {
+            // gunakan subtotal/tax/total numeric tanpa format ribuan
             session()->put('checkout',[
                 'discount' => 0,
-                'subtotal' => Cart::instance('cart')->subtotal(),
-                'tax' => Cart::instance('cart')->tax(),
-                'total' => Cart::instance('cart')->total()
+                'subtotal' => Cart::instance('cart')->subtotal(2, '.', ''),
+                'tax' => Cart::instance('cart')->tax(2, '.', ''),
+                'total' => Cart::instance('cart')->total(2, '.', '')
             ]);
         }
     }

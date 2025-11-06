@@ -2,7 +2,8 @@
 @section('content')
 <style>
     .cart-totals td {
-        text-align: left;
+        /* ubah ke kanan agar angka selalu rata kanan dan tidak menumpuk dengan label */
+        text-align: right;
     }
 
     .cart-totals th {
@@ -207,27 +208,27 @@
                             <tbody>
                                 <tr>
                                     <th>Subtotal</th>
-                                    <td>IDR {{Cart::instance('cart')->subtotal()}}</td>
+                                    <td>IDR&nbsp;{{ Cart::instance('cart')->subtotal() }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Discount {{Session("coupon")["code"]}}</th>
-                                    <td>-IDR {{Session("discounts")["discount"]}}</td>
+                                    <th>Discount {{ Session('coupon')['code'] ?? '' }}</th>
+                                    <td>-IDR&nbsp;{{ number_format((float) session('discounts.discount'), 2, '.', ',') }}</td>
                                 </tr>
                                 <tr>
                                     <th>Subtotal After Discount</th>
-                                    <td>IDR {{Session("discounts")["subtotal"]}}</td>
+                                    <td>IDR&nbsp;{{ number_format((float) session('discounts.subtotal'), 2, '.', ',') }}</td>
                                 </tr>
                                 <tr>
                                     <th>SHIPPING</th>
                                     <td class="text-right">Free</td>
                                 </tr>
                                 <tr>
-                                    <th>PPN (11%)</th>
-                                    <td>IDR {{Session("discounts")["tax"]}}</td>
+                                    <th>PPN (7%)</th>
+                                    <td>IDR&nbsp;{{ number_format((float) session('discounts.tax'), 2, '.', ',') }}</td>
                                 </tr>
                                 <tr class="cart-total">
                                     <th>Total</th>
-                                    <td>IDR {{Session("discounts")["total"]}}</td>
+                                    <td>IDR&nbsp;{{ number_format((float) session('discounts.total'), 2, '.', ',') }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -243,7 +244,7 @@
                                     <td class="text-right">Free</td>
                                 </tr>
                                 <tr>
-                                    <th>PPN (11%)</th>
+                                    <th>PPN (7%)</th>
                                     <td>IDR {{Cart::instance('cart')->tax()}}</td>
                                 </tr>
                                 <tr class="cart-total">
